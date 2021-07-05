@@ -1,0 +1,63 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+library(tidyverse)     # for data cleaning and plotting
+library(maps)          # for map data
+library(ggmap)         # for mapping points on maps
+library(gplots)        # for col2hex() function
+library(RColorBrewer)  # for color palettes
+library(sf)            # for working with spatial data
+library(leaflet)       # for highly customizable mapping
+library(ggthemes)      # for more themes (including theme_map())
+library(gridExtra)
+theme_set(theme_minimal())
+```
+
+```{r}
+bachelor <- read_csv('Data/Bachelor_Degree_Majors.csv')
+median_income <- read_csv('Data/Median_Income.csv')
+pop_est_2019 <- read_csv('Data/nst-est2019-01.csv')
+```
+
+1. How does median income affect the number of bachelor degrees in each state? 
+```{r}
+pop_est_2019 <- pop_est_2019 %>% 
+  mutate(State = str_replace(State,'.','')) %>% 
+  rename('total_pop' = '2019')
+  
+```
+```{r}
+states_map <- map_data("state")
+
+p1<-bachelor %>% 
+  filter(Sex == 'Total') %>% 
+  group_by(State) %>% 
+  summarise(total_bachelor = sum(`Bachelor's Degree Holders`)) %>% 
+  merge(pop_est_2019, on = 'State') %>% 
+  mutate(bachelor_prop = total_bachelor/total_pop,
+         State = str_to_lower(State)) %>%
+  ggplot() +
+  geom_map(map = states_map,
+           aes(map_id = State,
+               fill = bachelor_prop)) +
+  expand_limits(x = states_map$long, y = states_map$lat) + 
+  theme_map() 
+
+p2<-median_income %>% 
+  mutate(State = str_to_lower(State),
+         Income = str_sub(Income,start = 2),
+         Income = str_remove(Income,','),
+         Income = as.numeric(Income)) %>% 
+  ggplot() +
+  geom_map(map = states_map,
+           aes(map_id = State,
+               fill = Income))+
+  expand_limits(x = states_map$long, y = states_map$lat) + 
+  theme_map() 
+
+grid.arrange(p1,p2,ncol = 2)
+```
+
