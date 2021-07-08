@@ -111,7 +111,10 @@ bachelor %>%
   select(-Sex,-State) %>% 
   group_by(`Age Group`) %>% 
   summarise(across(everything(), sum)) %>% 
-  ggplot(aes(x = `Age Group` , y = `Bachelor's Degree Holders`)) + 
-  geom_col()
+  pivot_longer(cols = !starts_with("Age"),
+               names_to = "Type",
+               values_to = 'Number') %>% 
+  ggplot(aes(x = as.factor(`Age Group`) , y = Number , fill =as.factor(Type))) + 
+  geom_bar(stat="identity",position="dodge")
 ```
 
