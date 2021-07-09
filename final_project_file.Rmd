@@ -45,55 +45,7 @@ degrees_over_time <- read_csv("D:/Macalester College/Courses/Statistics/STAT 112
 ```
 
 
-## Reference Garden Graph Code
-
-
-```{r}
-garden_harvest %>%
-  filter(vegetable == "tomatoes") %>%
-  group_by(variety) %>%
-  summarise(var_weight = sum(weight)) %>% 
-  mutate(n = round(var_weight/sum(var_weight)*99.00990099)) %>%
-  arrange(desc(n)) %>%
-  mutate(variety = str_to_title(variety),
-         variety = fct_rev(variety),
-         variety = fct_reorder(variety, n)) %>%
-  ggplot(aes(fill = variety,
-             values = n)) +
-  geom_waffle(n_rows = 7, 
-              size = 0.3,
-              colour = "papayawhip") +
-  coord_equal() +
-  theme_ipsum_rc(grid="") +
-  theme_enhance_waffle() +
-  scale_fill_manual(
-    name = NULL,
-    values = c("grey22", "darkslategrey", "salmon4", "tomato3", "tomato", "salmon", 
-               "khaki2", "darkgoldenrod1", "orangered1", "firebrick3", "firebrick4", 
-               "violetred4")) +
-  labs(title = "Distribution of Tomato Variety by Weight (g) Produced", 
-       subtitle = "Total weight of 158,231 g produced.",
-       fill = "") +
-  theme(
-    plot.background = element_rect(fill = "papayawhip"),
-    plot.title = element_text(size = 12, 
-                              family = "mono", 
-                              face = "bold", 
-                              hjust = 0.5, 
-                              color = "brown4", 
-                              margin = margin(10, 0, 10, 0)),
-    plot.subtitle = element_text(size = 11, 
-                                 family = "mono",
-                                 face = "italic",
-                                 hjust = 0.5,
-                                 color = "brown4"),
-    legend.text = element_text(size = 8, 
-                               family = "sans", 
-                               color = "brown4"),
-    legend.position = "bottom",
-    legend.key.size = unit(0.6, 'cm')) +
-  guides(fill = guide_legend(reverse = TRUE))
-```
+## Bachelor's Degree by Gender and Age Group
 
 ```{r}
 Bachelor_Degree_Majors %>%
@@ -117,10 +69,13 @@ Bachelor_Degree_Majors %>%
   coord_equal() +
   theme_ipsum_rc(grid = "") +
   theme_enhance_waffle() +
-  theme(legend.position = "bottom") +
   labs(title = "", 
        subtitle = "",
-       fill = "")
+       fill = "") +
+  theme_igray() +
+  theme(legend.position = "bottom",
+        axis.text = element_blank(),
+        axis.ticks = element_blank())
 ```
 
 ```{r}
@@ -145,10 +100,13 @@ Bachelor_Degree_Majors %>%
   coord_equal() +
   theme_ipsum_rc(grid = "") +
   theme_enhance_waffle() +
-  theme(legend.position = "bottom") +
   labs(title = "", 
        subtitle = "",
-       fill = "")
+       fill = "") +
+  theme_igray() +
+  theme(legend.position = "bottom",
+        axis.text = element_blank(),
+        axis.ticks = element_blank())
 ```
 
 ## Bachelor's Degrees Over Time
@@ -171,7 +129,8 @@ degrees_over_time %>%
   geom_col(width = 5) +
   labs(title = "", 
        subtitle = "",
-       fill = "")
+       fill = "") +
+  theme_igray()
 ```
 
 ## Bachelor's Degrees Income
@@ -274,6 +233,7 @@ degree_income_starting %>%
                    yend = Major)) +
   labs(title = "", 
        subtitle = "",
-       fill = "")
+       fill = "") +
+  theme_igray()
 ```
 
