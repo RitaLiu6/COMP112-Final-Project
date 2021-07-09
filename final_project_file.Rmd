@@ -68,7 +68,7 @@ Bachelor_Degree_Majors %>%
              values = prop_degree)) +
   geom_waffle(n_rows = 10, 
               size = 1,
-              color = "white") +
+              color = "grey3") +
   facet_wrap(~Sex) +
   coord_equal() +
   theme_ipsum_rc(grid = "") +
@@ -76,7 +76,7 @@ Bachelor_Degree_Majors %>%
   theme_igray() +
   scale_fill_manual(
     name = NULL,
-    values = c("dodgerblue", "brown3", "goldenrod1", "darkorange2", "slateblue4")) +
+    values = c("dodgerblue", "tomato3", "goldenrod1", "darkorange1", "slateblue4")) +
   labs(title = "", 
        subtitle = "",
        fill = "") +
@@ -103,21 +103,31 @@ Bachelor_Degree_Majors %>%
             num_total = round(mean(`Bachelor's Degree Holders`))) %>%
   mutate(prop_degree = num_degree/num_total*102.2) %>%
   arrange(desc(prop_degree)) %>%
+   mutate(Degree_Type = fct_rev(Degree_Type),
+         Degree_Type = fct_reorder(Degree_Type, prop_degree)) %>%
   ggplot(aes(fill = Degree_Type,
              values = prop_degree)) +
   geom_waffle(n_rows = 10, 
-              size = 1) +
+              size = 1,
+              color = "grey3") +
   facet_wrap(~`Age Group`) +
   coord_equal() +
   theme_ipsum_rc(grid = "") +
   theme_enhance_waffle() +
+  theme_igray() +
+  scale_fill_manual(
+    name = NULL,
+    values = c("tomato3", "dodgerblue", "goldenrod1", "darkorange1", "slateblue4")) +
   labs(title = "", 
        subtitle = "",
        fill = "") +
-  theme_igray() +
   theme(legend.position = "bottom",
         axis.text = element_blank(),
-        axis.ticks = element_blank())
+        axis.ticks = element_blank(),
+        legend.title = element_text(size = 13), 
+        legend.text = element_text(size = 13)) +
+  guides(fill = guide_legend(reverse = TRUE),
+         fill = guide_legend(override.aes = list(size = 1)))
 ```
 
 ## Bachelor's Degrees Over Time
@@ -141,7 +151,11 @@ degrees_over_time %>%
   labs(title = "", 
        subtitle = "",
        fill = "") +
-  theme_igray()
+  theme_igray() +
+  scale_fill_manual(
+    name = NULL,
+    values = c("slateblue4", "dodgerblue", "lightgoldenrod", "goldenrod1", "darkorange1", "tomato3")) +
+  theme(legend.position = "bottom")
 ```
 
 ## Bachelor's Degrees Income
@@ -245,6 +259,10 @@ degree_income_starting %>%
   labs(title = "", 
        subtitle = "",
        fill = "") +
-  theme_igray()
+  theme_igray() +
+  scale_color_manual(
+    name = NULL,
+    values = c("tomato", "seagreen3")) +
+  theme(legend.position = "bottom")
 ```
 
