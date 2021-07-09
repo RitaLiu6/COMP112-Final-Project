@@ -20,6 +20,7 @@ theme_set(theme_minimal())
 bachelor <- read_csv('Data/Bachelor_Degree_Majors.csv')
 median_income <- read_csv('Data/Median_Income.csv')
 pop_est_2019 <- read_csv('Data/nst-est2019-01.csv')
+edu_exp <- read_csv('Data/states.csv')
 ```
 
 1. How does median income affect the number of bachelor degrees in each state? 
@@ -29,22 +30,25 @@ pop_est_2019 <- pop_est_2019 %>%
   rename('total_pop' = '2019')
   
 ```
-```{r}
+```{r,fig.height=5, fig.width = 10}
 states_map <- map_data("state")
 
 p1<-bachelor %>% 
-  filter(Sex == 'Total') %>% 
+  filter(Sex == 'Total',
+         `Age Group`== '25 and older') %>% 
   group_by(State) %>% 
   summarise(total_bachelor = sum(`Bachelor's Degree Holders`)) %>% 
   merge(pop_est_2019, on = 'State') %>% 
   mutate(bachelor_prop = total_bachelor/total_pop,
-         State = str_to_lower(State)) %>%
+         State = str_to_lower(State)) %>% 
   ggplot() +
   geom_map(map = states_map,
            aes(map_id = State,
                fill = bachelor_prop)) +
   expand_limits(x = states_map$long, y = states_map$lat) + 
-  theme_map() 
+  theme_map() + 
+  labs(title = 'Rate of Bachelor Dergee by State',
+       fill = 'bachelor degree rate')
 
 p2<-median_income %>% 
   mutate(State = str_to_lower(State),
@@ -56,8 +60,61 @@ p2<-median_income %>%
            aes(map_id = State,
                fill = Income))+
   expand_limits(x = states_map$long, y = states_map$lat) + 
-  theme_map() 
+  theme_map() + 
+  labs(title = 'Median Income by State',
+       fill = 'median income')
 
 grid.arrange(p1,p2,ncol = 2)
+```
+
+The graphs above show the bachelor degree rate and median income of each state respectively. The lighter the state is, the more bachelor degrees that the state has and the higher the median income is. By comparing these two graphs, we could roughly see that in general, the state with higher median income would also has more bachelor degrees. 
+
+
+2. Would the number of bachelor degrees relate with the net expenditure of financial spending on education? 
+```{r}
+edu<-edu_exp %>% 
+  filter(YEAR >=2012) %>% 
+  mutate(net_edu_exp = (TOTAL_REVENUE - TOTAL_EXPENDITURE)/ENROLL )%>% 
+  group_by(STATE) %>% 
+  summarise(net_edu_exp_avg = mean(net_edu_exp)) %>% 
+  left_join(
+    (bachelor %>% 
+  filter(Sex == 'Total',`Age Group`=='25 and older') %>% 
+  group_by(State) %>% 
+  summarise(total_bachelor = sum(`Bachelor's Degree Holders`)) %>% 
+  merge(pop_est_2019, on = 'State') %>% 
+  mutate(bachelor_prop = total_bachelor/total_pop)), by = c('STATE' = 'State') ) %>% 
+  inner_join(
+    (median_income %>% 
+  mutate(Income = str_sub(Income,start = 2),
+         Income = str_remove(Income,','),
+         Income = as.numeric(Income))), by = c('STATE' = 'State')) 
+
+edu%>% 
+  ggplot(aes(x = net_edu_exp_avg , y = bachelor_prop)) + 
+  geom_point(aes(color = Income)) + 
+  geom_text(aes(label=ifelse(bachelor_prop>0.3,as.character(STATE),'')),hjust=1.2,vjust=0) + 
+  geom_text(aes(label = ifelse(bachelor_prop<0.16,as.character(STATE),'')),hjust=0.5,vjust=1) + 
+  geom_text(aes(label = ifelse(net_edu_exp_avg>1,as.character(STATE),'')),hjust=0.5,vjust=1) + 
+  geom_smooth(data = (edu %>% filter(Income>70000)) , method = "lm", se = FALSE, color = 'lightblue',lty = 'dashed') + 
+  geom_smooth(data = (edu %>% filter(Income<=70000)) , method = "lm", se = FALSE, color = 'black', lty = 'dashed')+
+  labs(x = 'Average Net Educational Expenditure in 5 Years',
+       y = 'Rate of Bachelor Degrees')
+``` 
+Graph above compares the government averaged government expenditure on primary and secondary schools in 5 years (2012-2015)
+with the rate of bachelor degrees in each state, marking points with different color for different median incomes. The dashed lines are the least square lines for states with higher median income (above 70000) and those with lower median income (equal or above 70000). It turns out that in general, we could expect a postive relationship between the average government expenditure on education and the proportion of bachelor degrees. However, this postive correlation seems to be stronger for states with higher median incomes, as the light line showing a steeper slope. For states with lower median income, this postive relationship is minimal and even negative. 
+
+3. 
+```{r}
+bachelor %>% 
+  filter(Sex == 'Total', `Age Group` != '25 and older') %>% 
+  select(-Sex,-State) %>% 
+  group_by(`Age Group`) %>% 
+  summarise(across(everything(), sum)) %>% 
+  pivot_longer(cols = !starts_with("Age"),
+               names_to = "Type",
+               values_to = 'Number') %>% 
+  ggplot(aes(x = as.factor(`Age Group`) , y = Number , fill =as.factor(Type))) + 
+  geom_bar(stat="identity",position="dodge")
 ```
 
