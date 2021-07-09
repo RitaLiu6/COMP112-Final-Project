@@ -32,6 +32,7 @@ library(stringi)
 library(ggplot2)
 library(ggalt)
 library(scales)
+library(emojifont)  
 theme_set(theme_minimal())
 ```
 
@@ -61,21 +62,31 @@ Bachelor_Degree_Majors %>%
             num_total = round(mean(`Bachelor's Degree Holders`))) %>%
   mutate(prop_degree = round(num_degree/num_total*99.8)) %>%
   arrange(desc(prop_degree)) %>%
+  mutate(Degree_Type = fct_rev(Degree_Type),
+         Degree_Type = fct_reorder(Degree_Type, prop_degree)) %>%
   ggplot(aes(fill = Degree_Type,
              values = prop_degree)) +
   geom_waffle(n_rows = 10, 
-              size = 1) +
+              size = 1,
+              color = "white") +
   facet_wrap(~Sex) +
   coord_equal() +
   theme_ipsum_rc(grid = "") +
   theme_enhance_waffle() +
+  theme_igray() +
+  scale_fill_manual(
+    name = NULL,
+    values = c("dodgerblue", "brown3", "goldenrod1", "darkorange2", "slateblue4")) +
   labs(title = "", 
        subtitle = "",
        fill = "") +
-  theme_igray() +
   theme(legend.position = "bottom",
         axis.text = element_blank(),
-        axis.ticks = element_blank())
+        axis.ticks = element_blank(),
+        legend.title = element_text(size = 13), 
+        legend.text = element_text(size = 13)) +
+  guides(fill = guide_legend(reverse = TRUE),
+         fill = guide_legend(override.aes = list(size = 1)))
 ```
 
 ```{r}
