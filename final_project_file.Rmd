@@ -1,6 +1,6 @@
 ---
-title: "Bachelor's Degree by Composition"
-author: "Shaherazade Khan"
+title: "COMP/STAT 112 Final Project"
+author: "S Khan and R Liu"
 output: 
   html_document:
     theme: readable
