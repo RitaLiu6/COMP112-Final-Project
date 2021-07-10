@@ -67,8 +67,8 @@ Bachelor_Degree_Majors %>%
   ggplot(aes(fill = Degree_Type,
              values = prop_degree)) +
   geom_waffle(n_rows = 10, 
-              size = 1,
-              color = "grey3") +
+              size = 0.1,
+              color = "midnightblue") +
   facet_wrap(~Sex) +
   coord_equal() +
   theme_ipsum_rc(grid = "") +
@@ -76,8 +76,8 @@ Bachelor_Degree_Majors %>%
   theme_igray() +
   scale_fill_manual(
     name = NULL,
-    values = c("dodgerblue", "tomato3", "goldenrod1", "darkorange1", "slateblue4")) +
-  labs(title = "", 
+    values = c("cornflowerblue", "palevioletred4", "lightgoldenrod3", "tan2", "slateblue4")) +
+  labs(title = "Distribution of Bachelor's Degrees by Gender", 
        subtitle = "",
        fill = "") +
   theme(legend.position = "bottom",
@@ -108,8 +108,8 @@ Bachelor_Degree_Majors %>%
   ggplot(aes(fill = Degree_Type,
              values = prop_degree)) +
   geom_waffle(n_rows = 10, 
-              size = 1,
-              color = "grey3") +
+              size = 0.1,
+              color = "midnightblue") +
   facet_wrap(~`Age Group`) +
   coord_equal() +
   theme_ipsum_rc(grid = "") +
@@ -117,8 +117,8 @@ Bachelor_Degree_Majors %>%
   theme_igray() +
   scale_fill_manual(
     name = NULL,
-    values = c("tomato3", "dodgerblue", "goldenrod1", "darkorange1", "slateblue4")) +
-  labs(title = "", 
+    values = c("palevioletred4", "cornflowerblue", "lightgoldenrod3", "tan2", "slateblue4")) +
+  labs(title = "Distribution of Bachelor's Degrees by Age Group", 
        subtitle = "",
        fill = "") +
   theme(legend.position = "bottom",
@@ -148,14 +148,15 @@ degrees_over_time %>%
              y = Count,
              fill = Degree_Type)) +
   geom_col(width = 5) +
-  labs(title = "", 
+  labs(title = "Attainment of Education Over Time in the US", 
        subtitle = "",
        fill = "") +
   theme_igray() +
   scale_fill_manual(
     name = NULL,
-    values = c("slateblue4", "dodgerblue", "lightgoldenrod", "goldenrod1", "darkorange1", "tomato3")) +
-  theme(legend.position = "bottom")
+    values = c("darkslateblue", "steelblue4", "tan2", "lightblue4", "azure4", "darkgrey")) +
+  theme(legend.position = "bottom",
+        axis.title.x = element_blank())
 ```
 
 ## Bachelor's Degrees Income
@@ -256,13 +257,14 @@ degree_income_starting %>%
                    xend = salary, 
                    y = Major, 
                    yend = Major)) +
-  labs(title = "", 
+  labs(title = "Distribution of Median Income by Undergraduate Degree", 
        subtitle = "",
        fill = "") +
   theme_igray() +
   scale_color_manual(
     name = NULL,
-    values = c("tomato", "seagreen3")) +
-  theme(legend.position = "bottom")
+    values = c("tomato", "dodgerblue")) +
+  theme(legend.position = "bottom",
+        axis.title = element_blank())
 ```
 
