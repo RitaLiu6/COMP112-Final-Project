@@ -67,10 +67,10 @@ p2<-median_income %>%
 grid.arrange(p1,p2,ncol = 2)
 ```
 
-The graphs above show the bachelor degree rate and median income of each state respectively. The lighter the state is, the more bachelor degrees that the state has and the higher the median income is. By comparing these two graphs, we could roughly see that in general, the state with higher median income would also has more bachelor degrees. 
+Would income generally relate with the number of bachelor degrees? The graphs above show the proportion of bachelor degrees in each state and median income of each state respectively. The lighter the state is, the more bachelor degrees that the state has and the higher the median income is. By comparing these two graphs, we could roughly see that in general, the state with higher median income would also has more bachelor degrees. 
 
 
-2. Would the number of bachelor degrees relate with the net expenditure of financial spending on education? 
+
 ```{r}
 edu<-edu_exp %>% 
   filter(YEAR >=2012) %>% 
@@ -88,7 +88,10 @@ edu<-edu_exp %>%
     (median_income %>% 
   mutate(Income = str_sub(Income,start = 2),
          Income = str_remove(Income,','),
-         Income = as.numeric(Income))), by = c('STATE' = 'State')) 
+         Income = as.numeric(Income))), by = c('STATE' = 'State')) %>% 
+  mutate(IncomeGroup = ifelse(Income > 70000,'Median Income>70000','Median Income<70000'))
+```
+```{r}
 
 edu%>% 
   ggplot(aes(x = net_edu_exp_avg , y = bachelor_prop)) + 
@@ -96,25 +99,20 @@ edu%>%
   geom_text(aes(label=ifelse(bachelor_prop>0.3,as.character(STATE),'')),hjust=1.2,vjust=0) + 
   geom_text(aes(label = ifelse(bachelor_prop<0.16,as.character(STATE),'')),hjust=0.5,vjust=1) + 
   geom_text(aes(label = ifelse(net_edu_exp_avg>1,as.character(STATE),'')),hjust=0.5,vjust=1) + 
-  geom_smooth(data = (edu %>% filter(Income>70000)) , method = "lm", se = FALSE, color = 'lightblue',lty = 'dashed') + 
-  geom_smooth(data = (edu %>% filter(Income<=70000)) , method = "lm", se = FALSE, color = 'black', lty = 'dashed')+
+  geom_smooth(aes(lty = IncomeGroup), method = "lm", se = FALSE) + 
   labs(x = 'Average Net Educational Expenditure in 5 Years',
-       y = 'Rate of Bachelor Degrees')
+       y = 'Rate of Bachelor Degrees',
+       title = 'Government educational expenditure vs proportion of bachelor degrees\ndifferentiating by state median income  ',
+       lty ='Regression Lines',
+       color = 'Median Income')
 ``` 
-Graph above compares the government averaged government expenditure on primary and secondary schools in 5 years (2012-2015)
-with the rate of bachelor degrees in each state, marking points with different color for different median incomes. The dashed lines are the least square lines for states with higher median income (above 70000) and those with lower median income (equal or above 70000). It turns out that in general, we could expect a postive relationship between the average government expenditure on education and the proportion of bachelor degrees. However, this postive correlation seems to be stronger for states with higher median incomes, as the light line showing a steeper slope. For states with lower median income, this postive relationship is minimal and even negative. 
+Also, for states with different median incomes, the government spending on primary and secondary education may contribute differently to the proportion of bachelor degrees a state has. For example, the graph above compares the averaged net government expenditure on primary and secondary schools in 5 years (2012-2016)
+with the rate of bachelor's degrees in each state. Points are marked with different colors for different median incomes. The dashed lines are the regression lines for states with higher median income (above 70000) and those with lower median income (equal to or above 70000). Those lines precisely depict the relationship between the variable and the outcome in different groups. It turns out that in general, we could expect a positive relationship between the average government expenditure on education and the proportion of bachelor's degrees. However, this positive correlation seems to be stronger for states with higher median incomes, as the dashed line showing a steeper slope. For states with lower median income, this positive relationship is minimal and even negative. Some states deviate from the general trend though. For example, though the net education spendings for the District of Columbia and Massachusetts are not exceptional, the proportion of bachelor degrees they have are higher than expected. For states like Indiana, West Virginia, and Mississippi, the proportions of bachelor's degrees are surprisingly low compared to their government educational expenditures. 
 
-3. 
-```{r}
-bachelor %>% 
-  filter(Sex == 'Total', `Age Group` != '25 and older') %>% 
-  select(-Sex,-State) %>% 
-  group_by(`Age Group`) %>% 
-  summarise(across(everything(), sum)) %>% 
-  pivot_longer(cols = !starts_with("Age"),
-               names_to = "Type",
-               values_to = 'Number') %>% 
-  ggplot(aes(x = as.factor(`Age Group`) , y = Number , fill =as.factor(Type))) + 
-  geom_bar(stat="identity",position="dodge")
-```
+Dataset: 
+We used several datasets in our analysis:
+We get bachelor's majors in each state, age and sex category in 2019, U.S. population and median income in each state in 2019, and U.S. educational finances data from the US Census Bureau; For the salary data of each major and 
+
+
+
 
