@@ -1,9 +1,9 @@
 ---
-title: "COMP/STAT 112 Final Project"
-author: "S Khan and R Liu"
+title: "Analyzing the Relationship Between Higher Education and Income"
+author: "Shaherazade Khan and Rita Liu"
 output: 
   html_document:
-    theme: readable
+    theme: cerulean
     highlight: zenburn
     toc: true
     toc_float: true
@@ -39,6 +39,7 @@ library(sf)            # for working with spatial data
 library(gridExtra)
 theme_set(theme_minimal())
 library(RColorBrewer)  # for color palettes
+library(prettydoc)
 ```
 
 ```{r data}
@@ -58,11 +59,68 @@ pop_est_2019 <- read_csv('Data/nst-est2019-01.csv')
 edu_exp <- read_csv('Data/states.csv')
 ```
 
-## Data 
-We get bachelor's majors in each state, age and sex category in 2019, U.S. population and median income in each state in 2019, educational attainment data in 1995, 2005, and 2015, and U.S. educational finances data from the US Census Bureau; For the salary data of each major, the data is collected through a year-long survey by PayScale Inc.
+### Introduction & Background
+
+  How many times have you heard that in order to get a job, you need to go to college? There _is_ a definitive correlation between attaining higher education and employment success, but in addition to the logistics there is the aspect of mentality. For many, it is an expectation that they attend college following high school and has become a regular phase of life for young adults. How did such a strong push for attending college develop? There must be more to the relationship between college and career success beyond societal expectations and competitive job acquisition.
+ 
+  In the past few decades, the procurement and breadth of education have risen in the United States in an increasingly positive trend. The proportions of different extents of education remain similar in recent years, where the population is dominated by those with just a high school diploma or some college without a degree, but the groups reaching the most growth are those with college certifications, such as bachelor's, associate's, and advanced degrees.
 
 
-## Bachelor's Degree by Gender and Age Group
+```{r,fig.height=5,fig.width=8}
+degrees_over_time %>%
+  group_by(Year) %>%
+  subset(select = -Total) %>%
+  summarize(`No HS Diploma` = No_HS_Diploma,
+         `HS Diploma` = HS_Diploma,
+         `Some College No Degree` = Some_College_No_Degree,
+         Associate = Associate, Advanced = Advanced,
+         Bachelor = Bachelor) %>%
+  pivot_longer(-c(Year),
+               names_to = "Degree_Type",
+               values_to = "Count",
+               values_ptypes = list(num_nests = integer())) %>%
+  group_by(Year, Degree_Type) %>%
+  summarize(Count = round(mean(Count))) %>%
+  arrange(desc(Count)) %>%
+  ggplot(aes(x = Year,
+             y = Count,
+             fill = Degree_Type)) +
+  geom_col(width = 4.25) +
+  labs(title = "Attainment of Education Over Time in the US", 
+       subtitle = "Number of degrees reported in the US from 1995-2015",
+       fill = "") +
+  theme_igray() +
+  scale_fill_viridis_d() +
+  theme(legend.position = "bottom",
+        legend.text = element_text(size = 18),
+        axis.title = element_blank(),
+        axis.text = element_text(size = 18),
+        plot.title = element_text(hjust = 0.5,
+                                  size = 25,
+                                  margin = margin(10,0,0,0)),
+        plot.subtitle = element_text(size = 20,
+                                     hjust = 0.5,
+                                     margin = margin(5,0,15,0),
+                                     color = "grey22",
+                                     face = "italic"))
+```
+
+
+  In order to analyze the growing preference for college degrees, we will explore the specific types of degrees offered, their targeted audiences, and the relationship between bachelor's degrees and different aspects of income.
+
+
+### Data Collection
+
+
+  Our initial search began by looking for popular, map-able variables that could be related to a variety of different data sets and used for diverse plotting methods. As college students, it was easy to be attracted to data sets involving education and the dissemination of bachelor's degree data since we have some firsthand insight into the circumstances of the variables. Therefore, the data sets we collected involve various aspects of bachelor's degree preference, such as compositional, spatial, and linear relationships. 
+
+  We observe undergraduate majors in each state, age, and sex category (2019), U.S. population and median income in each state (2019), educational attainment data (1995-2015), and U.S. educational finances data from the US Census Bureau. For the salary data of each major, the data is collected through a year-long survey by PayScale Inc and assimilated into the categories of prior data for facilitated comparison.
+
+
+### Degree Composition: Which Degrees are More Favourable?
+
+
+First, we will explore bachelor's degree popularity by gender and age to distinguish the inherent preferences of educational acquisition.
 
 ```{r,fig.height=5,fig.width=12}
 Bachelor_Degree_Majors %>%
@@ -84,7 +142,7 @@ Bachelor_Degree_Majors %>%
              values = prop_degree)) +
   geom_waffle(n_rows = 10, 
               size = 0.1,
-              color = "midnightblue") +
+              color = "white") +
   facet_wrap(~Sex) +
   coord_equal() +
   theme_ipsum_rc(grid = "") +
@@ -92,8 +150,8 @@ Bachelor_Degree_Majors %>%
   theme_igray() +
   scale_fill_manual(
     name = NULL,
-    values = c("cornflowerblue", "palevioletred4", "goldenrod1", "tan2", 
-               "slateblue4")) +
+    values = c("paleturquoise4", "lightsalmon", "darkolivegreen3", "khaki2", 
+               "darkslateblue")) +
   labs(title = "Distribution of Bachelor's Degrees by Gender", 
        subtitle = "",
        fill = "") +
@@ -103,11 +161,16 @@ Bachelor_Degree_Majors %>%
         legend.text = element_text(size = 13.5),
         plot.title = element_text(hjust = 0.5,
                                   size = 35,
-                                  margin = margin(10,0,0,0)),
-        strip.text = element_text(size = 30)) +
+                                  margin = margin(15,0,20,0)),
+        strip.text = element_text(size = 30),
+        panel.grid = element_blank()) +
   guides(fill = guide_legend(reverse = TRUE),
          fill = guide_legend(override.aes = list(size = 1)))
 ```
+
+
+  Starting with gender, there is a noticeable difference in the types of degrees sought after by men vs women. The most common field for either sex is Science and Engineering, but women lean more towards the Arts, Humanities, and Education, while men tend to be more involved in Business. Furthermore, the distribution of degree types for women are more balanced than those of the opposite gender. Do these sorts of biases also exist in different age groups?
+
 
 ```{r,fig.height=5,fig.width=12}
 Bachelor_Degree_Majors %>%
@@ -129,7 +192,7 @@ Bachelor_Degree_Majors %>%
              values = prop_degree)) +
   geom_waffle(n_rows = 10, 
               size = 0.1,
-              color = "midnightblue") +
+              color = "white") +
   facet_wrap(~`Age Group`) +
   coord_equal() +
   theme_ipsum_rc(grid = "") +
@@ -137,8 +200,8 @@ Bachelor_Degree_Majors %>%
   theme_igray() +
   scale_fill_manual(
     name = NULL,
-    values = c("palevioletred4", "cornflowerblue", "goldenrod1", "tan2", 
-               "slateblue4")) +
+    values = c("lightsalmon", "paleturquoise4", "darkolivegreen3", "khaki2", 
+               "darkslateblue")) +
   labs(title = "Distribution of Bachelor's Degrees by Age Group", 
        subtitle = "",
        fill = "") +
@@ -148,60 +211,17 @@ Bachelor_Degree_Majors %>%
         legend.text = element_text(size = 21),
         plot.title = element_text(hjust = 0.5,
                                   size = 35,
-                                  margin = margin(10,0,0,0)),
-        strip.text = element_text(size = 30)) +
+                                  margin = margin(15,0,20,0)),
+        strip.text = element_text(size = 30),
+        panel.grid = element_blank()) +
   guides(fill = guide_legend(reverse = TRUE),
          fill = guide_legend(override.aes = list(size = 1)))
 ```
 
-## Bachelor's Degrees Over Time
 
-```{r}
-degrees_over_time %>%
-#  subset(select = -c(No_HS_Diploma, HS_Diploma, Some_College_No_Degree, Associate, 
-#                     Advanced)) %>%
-  group_by(Year) %>%
-  subset(select = -Total) %>%
-  summarize(`No HS Diploma` = No_HS_Diploma,
-         `HS Diploma` = HS_Diploma,
-         `Some College No Degree` = Some_College_No_Degree,
-         Associate = Associate, Advanced = Advanced,
-         Bachelor = Bachelor) %>%
-  pivot_longer(-c(Year),
-               names_to = "Degree_Type",
-               values_to = "Count",
-               values_ptypes = list(num_nests = integer())) %>%
-  group_by(Year, Degree_Type) %>%
-  summarize(Count = round(mean(Count))) %>%
-  arrange(desc(Count)) %>%
-  ggplot(aes(x = Year,
-             y = Count,
-             fill = Degree_Type)) +
-  geom_col(width = 4.5) +
-  labs(title = "Attainment of Education Over Time in the US", 
-       subtitle = "Number of degrees reported in the US from 1995-2015",
-       fill = "") +
-  theme_igray() +
-  #scale_fill_manual(
-    #name = NULL,
-    #values = c("darkslateblue", "steelblue4", "tan2", "lightblue4", "azure4", 
-              #"darkgrey")) +
-  scale_fill_brewer(palette="Blues") +
-  theme(legend.position = "bottom",
-        legend.text = element_text(size = 18),
-        axis.title = element_blank(),
-        axis.text = element_text(size = 18),
-        plot.title = element_text(hjust = 0.5,
-                                  size = 25,
-                                  margin = margin(10,0,0,0)),
-        plot.subtitle = element_text(size = 20,
-                                     hjust = 0.5,
-                                     margin = margin(5,0,15,0),
-                                     color = "grey22",
-                                     face = "italic"))
-```
-
-## Bachelor's Degrees Income
+  The answer is a definitive yes. In fact, the variances in degree preferences seem even more pronounced with age. As before, the most popular field for all of the groups is Science and Engineering, but each age range has a different second-most popular field of interest; for younger adults between 25-39, it is Arts, Humanities, and other studies. For adults between 40-64, the second-most preferred degree is Business. Lastly, senior adults aged 65 and older prefer degrees in Education. It seems like some degrees become more preferred over time, like Education, while some are popular only in specific ranges, such as Business and Arts/Humanities. 
+  
+  After reviewing the basic composition of attained bachelor's degrees, we can move forward with our initial questions about how these preferences developed. One of the more simple measures of career success following college is salary, particularly the amount of starting salary and mid-career salary one gains based on their choice of college degree.
 
 ```{r,fig.height=5,fig.width=8}
 degree_income_exp <- degree_income %>%
@@ -305,18 +325,24 @@ degree_income_starting %>%
   theme_igray() +
   scale_color_manual(
     name = NULL,
-    values = c("tomato", "dodgerblue")) +
+    values = c("darkolivegreen3", "paleturquoise4")) +
   theme(legend.position = "bottom",
         legend.text = element_text(size = 20),
         axis.title = element_blank(),
         axis.text = element_text(size = 18),
         plot.title = element_text(hjust = 0,
                                   size = 25,
-                                  margin = margin(10,0,0,0))) +
+                                  margin = margin(15,0,10,0))) +
   guides(color = guide_legend(reverse = TRUE))
 ```
 
-## State bachelor degrees vs.median income
+
+  Looking at the plot above, it is no wonder why most individuals, regardless of age and gender, prefer degrees in Science and Engineering. This field and its related studies account for the highest median starting and mid-career incomes of any of the portrayed groups. The general popularity of Arts/Humanities and Business before Education also follow along with the income trends. It appears that most individuals, barring specific exceptions with gender and age-related preferences, seek college degrees with higher resulting income.
+  
+  So far, we can explain some of the motivations for individuals in favouring bachelor's degrees with elevated income. However, there remains the question of how bachelor's degrees, as a whole, have become more popular. To answer this, we draw attention towards the spatial and complex financial relationships that such degrees have.
+
+
+### Degrees Over Space and Income: Explaining Deeper Trends
 
 ```{r}
 pop_est_2019 <- pop_est_2019 %>% 
@@ -324,7 +350,7 @@ pop_est_2019 <- pop_est_2019 %>%
   rename('total_pop' = '2019')
   
 ```
-```{r,fig.height=5,fig.width=13}
+```{r,fig.height=5,fig.width=14}
 states_map <- map_data("state")
 
 p1<-bachelor %>% 
@@ -338,12 +364,17 @@ p1<-bachelor %>%
   ggplot() +
   geom_map(map = states_map,
            aes(map_id = State,
-               fill = bachelor_prop)) +
+               fill = bachelor_prop),
+           color = "white") +
   expand_limits(x = states_map$long, y = states_map$lat) + 
   theme_map() + 
-  labs(title = 'Rate of Bachelor Degree by State',
-       fill = 'bachelor degree rate') + 
-  scale_fill_gradientn(colours=brewer.pal(7,"Blues"))
+  labs(title = "Rate of Bachelor's Degrees by State",
+       fill = "") + 
+  scale_fill_gradientn(colours=brewer.pal(7,"Blues")) +
+  theme(plot.title = element_text(size = 35,
+                                  hjust = 0.5,
+                                  margin = margin(0,0,0,0)),
+        legend.text = element_text(size = 18))
   
 
 p2<-median_income %>% 
@@ -354,21 +385,23 @@ p2<-median_income %>%
   ggplot() +
   geom_map(map = states_map,
            aes(map_id = State,
-               fill = Income))+
+               fill = Income),
+           color = "white")+
   expand_limits(x = states_map$long, y = states_map$lat) + 
   theme_map() + 
   labs(title = 'Median Income by State',
-       fill = 'median income') + 
-  scale_fill_gradientn(colours=brewer.pal(7,"Blues"))
+       fill = "") + 
+  scale_fill_gradientn(colours=brewer.pal(7,"Blues")) +
+  theme(plot.title = element_text(size = 35,
+                                  hjust = 0.5,
+                                  margin = margin(0,0,0,0)),
+        legend.text = element_text(size = 18))
 
 grid.arrange(p1,p2,ncol = 2)
 ```
 
+  Would income generally relate with the number of bachelor's degrees? The graphs above show the proportion of bachelor degrees in each state and median income of each state respectively. The lighter the state is, the more bachelor degrees that the state has and the higher the median income is. By comparing these two graphs, we could roughly see that in general, the state with higher median income would also has more bachelor degrees. 
 
-Would income generally relate with the number of bachelor degrees? The graphs above show the proportion of bachelor degrees in each state and median income of each state respectively. The lighter the state is, the more bachelor degrees that the state has and the higher the median income is. By comparing these two graphs, we could roughly see that in general, the state with higher median income would also has more bachelor degrees. 
-
-
-## Government expenditure vs Bachelor degree
 ```{r}
 edu<-edu_exp %>% 
   filter(YEAR >=2012) %>% 
@@ -400,15 +433,29 @@ edu%>%
   geom_smooth(aes(lty = IncomeGroup), method = "lm", se = FALSE) + 
   labs(x = 'Average Net Educational Expenditure in 5 Years',
        y = 'Rate of Bachelor Degrees',
-       title = 'Government educational expenditure vs proportion of bachelor degrees\ndifferentiating by state median income  ',
+       title = "Government Educational Expenditure vs Proportion of Bachelor's Degrees",
+       subtitle = "Differentiating by state median income",
        lty ='Regression Lines',
        color = 'Median Income') + 
   theme_igray() + 
   scale_color_gradientn(colours=brewer.pal(7,"Blues"))+
-  scale_fill_brewer(palette = 'Blues')
+  scale_fill_brewer(palette = 'Blues') +
+  theme(plot.title = element_text(size = 20,
+                                  hjust = 0,
+                                  margin = margin(10,0,0,0)),
+        plot.subtitle = element_text(size = 18,
+                                     hjust = 0.5,
+                                     face = "italic",
+                                     color = "grey22",
+                                     margin = margin(5,0,15,0)),
+        legend.text = element_text(size = 15),
+        legend.title = element_text(size = 18),
+        axis.title = element_text(size = 18),
+        axis.text = element_text(size = 18))
  
 ``` 
 
-
-Also, for states with different median incomes, the government spending on primary and secondary education may contribute differently to the proportion of bachelor degrees a state has. For example, the graph above compares the averaged net government expenditure on primary and secondary schools in 5 years (2012-2016)
+  Also, for states with different median incomes, the government spending on primary and secondary education may contribute differently to the proportion of bachelor degrees a state has. For example, the graph above compares the averaged net government expenditure on primary and secondary schools in 5 years (2012-2016)
 with the rate of bachelor's degrees in each state. Points are marked with different colors for different median incomes. The dashed lines are the regression lines for states with higher median income (above 70000) and those with lower median income (equal to or above 70000). Those lines precisely depict the relationship between the variable and the outcome in different groups. It turns out that in general, we could expect a positive relationship between the average government expenditure on education and the proportion of bachelor's degrees. However, this positive correlation seems to be stronger for states with higher median incomes, as the dashed line showing a steeper slope. For states with lower median income, this positive relationship is minimal and even negative. Some states deviate from the general trend though. For example, though the net education spendings for the District of Columbia and Massachusetts are not exceptional, the proportion of bachelor degrees they have are higher than expected. For states like Indiana, West Virginia, and Mississippi, the proportions of bachelor's degrees are surprisingly low compared to their government educational expenditures. 
+
+### Conclusion
