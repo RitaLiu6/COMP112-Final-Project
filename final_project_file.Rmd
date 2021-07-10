@@ -165,14 +165,14 @@ degrees_over_time %>%
 degree_income_exp <- degree_income %>%
   mutate(perc_change = `Percent change from Starting to Mid-Career Salary`,
          major = `Undergraduate Major`,
-         st_md_salary = `Starting Median Salary`,
-         mid_md_salary = `Mid-Career Median Salary`)
+         Starting = `Starting Median Salary`,
+         `Mid-Career` = `Mid-Career Median Salary`)
 
 degree_income_starting <- degree_income_exp %>%
   group_by(major) %>%
-  summarize(st_md_salary = parse_number(st_md_salary)) %>%
+  summarize(Starting = parse_number(Starting)) %>%
   pivot_wider(names_from = major,
-              values_from = st_md_salary) %>%
+              values_from = Starting) %>%
   mutate(`Science and Engineering` = (`Aerospace Engineering` + 
                                       `Chemical Engineering` + `Civil Engineering` + 
                                       `Electrical Engineering` + 
@@ -203,13 +203,13 @@ degree_income_starting <- degree_income_exp %>%
          .keep = "unused") %>%
   pivot_longer(cols = everything(),
                names_to = "Major",
-               values_to = "st_md_salary")
+               values_to = "Starting")
 
 degree_income_mid <- degree_income_exp %>%
   group_by(major) %>%
-  summarize(mid_md_salary = parse_number(mid_md_salary)) %>%
+  summarize(`Mid-Career` = parse_number(`Mid-Career`)) %>%
   pivot_wider(names_from = major,
-              values_from = mid_md_salary) %>%
+              values_from = `Mid-Career`) %>%
   mutate(`Science and Engineering` = (`Aerospace Engineering` + 
                                       `Chemical Engineering` + `Civil Engineering` + 
                                       `Electrical Engineering` + 
@@ -240,7 +240,7 @@ degree_income_mid <- degree_income_exp %>%
          .keep = "unused") %>%
   pivot_longer(cols = everything(),
                names_to = "Major",
-               values_to = "mid_md_salary")
+               values_to = "Mid-Career")
 
 degree_income_starting %>%
   left_join(degree_income_mid,
