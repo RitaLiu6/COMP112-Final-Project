@@ -92,15 +92,18 @@ Bachelor_Degree_Majors %>%
   theme_igray() +
   scale_fill_manual(
     name = NULL,
-    values = c("cornflowerblue", "palevioletred4", "lightgoldenrod3", "tan2", "slateblue4")) +
+    values = c("cornflowerblue", "palevioletred4", "lightgoldenrod3", "tan2", 
+               "slateblue4")) +
   labs(title = "Distribution of Bachelor's Degrees by Gender", 
        subtitle = "",
        fill = "") +
   theme(legend.position = "bottom",
         axis.text = element_blank(),
-        axis.ticks = element_blank(),
-        legend.title = element_text(size = 13), 
-        legend.text = element_text(size = 13)) +
+        axis.ticks = element_blank(), 
+        legend.text = element_text(size = 14),
+        plot.title = element_text(hjust = 0.5,
+                                  size = 35),
+        strip.text = element_text(size = 30)) +
   guides(fill = guide_legend(reverse = TRUE),
          fill = guide_legend(override.aes = list(size = 1)))
 ```
@@ -133,15 +136,18 @@ Bachelor_Degree_Majors %>%
   theme_igray() +
   scale_fill_manual(
     name = NULL,
-    values = c("palevioletred4", "cornflowerblue", "lightgoldenrod3", "tan2", "slateblue4")) +
+    values = c("palevioletred4", "cornflowerblue", "lightgoldenrod3", "tan2", 
+               "slateblue4")) +
   labs(title = "Distribution of Bachelor's Degrees by Age Group", 
        subtitle = "",
        fill = "") +
   theme(legend.position = "bottom",
         axis.text = element_blank(),
-        axis.ticks = element_blank(),
-        legend.title = element_text(size = 13), 
-        legend.text = element_text(size = 13)) +
+        axis.ticks = element_blank(),, 
+        legend.text = element_text(size = 18),
+        plot.title = element_text(hjust = 0.5,
+                                  size = 35),
+        strip.text = element_text(size = 30)) +
   guides(fill = guide_legend(reverse = TRUE),
          fill = guide_legend(override.aes = list(size = 1)))
 ```
@@ -163,22 +169,26 @@ degrees_over_time %>%
   ggplot(aes(x = Year,
              y = Count,
              fill = Degree_Type)) +
-  geom_col(width = 5) +
+  geom_col(width = 4) +
   labs(title = "Attainment of Education Over Time in the US", 
        subtitle = "",
        fill = "") +
   theme_igray() +
   #scale_fill_manual(
     #name = NULL,
-    #values = c("darkslateblue", "steelblue4", "tan2", "lightblue4", "azure4", "darkgrey")) +
-  scale_fill_brewer(palette="Blues")
+    #values = c("darkslateblue", "steelblue4", "tan2", "lightblue4", "azure4", 
+              #"darkgrey")) +
+  scale_fill_brewer(palette="Blues") +
   theme(legend.position = "bottom",
-        axis.title.x = element_blank())
+        axis.title.x = element_blank(),
+        axis.title.y = element_text(size = 18),
+        plot.title = element_text(hjust = 0.5,
+                                  size = 25))
 ```
 
 ## Bachelor's Degrees Income
 
-```{r}
+```{r,fig.height=5,fig.width=8}
 degree_income_exp <- degree_income %>%
   mutate(perc_change = `Percent change from Starting to Mid-Career Salary`,
          major = `Undergraduate Major`,
@@ -282,7 +292,9 @@ degree_income_starting %>%
     name = NULL,
     values = c("tomato", "dodgerblue")) +
   theme(legend.position = "bottom",
-        axis.title = element_blank())
+        axis.title = element_blank(),
+        plot.title = element_text(hjust = 0.5,
+                                  size = 30))
 ```
 
 ## State bachelor degrees vs.median income
@@ -293,7 +305,7 @@ pop_est_2019 <- pop_est_2019 %>%
   rename('total_pop' = '2019')
   
 ```
-```{r,fig.height=5, fig.width = 10}
+```{r,fig.height=5,fig.width=13}
 states_map <- map_data("state")
 
 p1<-bachelor %>% 
@@ -310,7 +322,7 @@ p1<-bachelor %>%
                fill = bachelor_prop)) +
   expand_limits(x = states_map$long, y = states_map$lat) + 
   theme_map() + 
-  labs(title = 'Rate of Bachelor Dergee by State',
+  labs(title = 'Rate of Bachelor Degree by State',
        fill = 'bachelor degree rate') + 
   scale_fill_gradientn(colours=brewer.pal(7,"Blues"))
   
