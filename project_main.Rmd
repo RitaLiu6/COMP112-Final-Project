@@ -110,8 +110,7 @@ Also, for states with different median incomes, the government spending on prima
 with the rate of bachelor's degrees in each state. Points are marked with different colors for different median incomes. The dashed lines are the regression lines for states with higher median income (above 70000) and those with lower median income (equal to or above 70000). Those lines precisely depict the relationship between the variable and the outcome in different groups. It turns out that in general, we could expect a positive relationship between the average government expenditure on education and the proportion of bachelor's degrees. However, this positive correlation seems to be stronger for states with higher median incomes, as the dashed line showing a steeper slope. For states with lower median income, this positive relationship is minimal and even negative. Some states deviate from the general trend though. For example, though the net education spendings for the District of Columbia and Massachusetts are not exceptional, the proportion of bachelor degrees they have are higher than expected. For states like Indiana, West Virginia, and Mississippi, the proportions of bachelor's degrees are surprisingly low compared to their government educational expenditures. 
 
 Dataset: 
-We used several datasets in our analysis:
-We get bachelor's majors in each state, age and sex category in 2019, U.S. population and median income in each state in 2019, and U.S. educational finances data from the US Census Bureau; For the salary data of each major and 
+We get bachelor's majors in each state, age and sex category in 2019, U.S. population and median income in each state in 2019, educational attainment data in 1995, 2005, and 2015, and U.S. educational finances data from the US Census Bureau; For the salary data of each major, the data is collected through a year-long survey by PayScale Inc.
 
 
 

@@ -33,22 +33,38 @@ library(ggplot2)
 library(ggalt)
 library(scales)
 library(emojifont)  
+library(maps)          # for map data
+library(ggmap)         # for mapping points on maps
+library(sf)            # for working with spatial data
+library(gridExtra)
 theme_set(theme_minimal())
+library(RColorBrewer)  # for color palettes
 ```
 
 ```{r data}
 
-Bachelor_Degree_Majors <- read_csv("D:/Macalester College/Courses/Statistics/STAT 112/COMP112-Final-Project/Data/Bachelor_Degree_Majors.csv")
+Bachelor_Degree_Majors <- read_csv("Data/Bachelor_Degree_Majors.csv")
 
-degree_income <- read_csv("D:/Macalester College/Courses/Statistics/STAT 112/COMP112-Final-Project/Data/degrees-that-pay-back.csv")
+degree_income <- read_csv("Data/degrees-that-pay-back.csv")
 
-degrees_over_time <- read_csv("D:/Macalester College/Courses/Statistics/STAT 112/COMP112-Final-Project/Data/1995_2015.csv")
+degrees_over_time <- read_csv("Data/1995_2015.csv")
+
+bachelor <- read_csv('Data/Bachelor_Degree_Majors.csv')
+
+median_income <- read_csv('Data/Median_Income.csv')
+
+pop_est_2019 <- read_csv('Data/nst-est2019-01.csv')
+
+edu_exp <- read_csv('Data/states.csv')
 ```
+
+## Data 
+We get bachelor's majors in each state, age and sex category in 2019, U.S. population and median income in each state in 2019, educational attainment data in 1995, 2005, and 2015, and U.S. educational finances data from the US Census Bureau; For the salary data of each major, the data is collected through a year-long survey by PayScale Inc.
 
 
 ## Bachelor's Degree by Gender and Age Group
 
-```{r}
+```{r,fig.height=5,fig.width=12}
 Bachelor_Degree_Majors %>%
   subset(select = -`Age Group`) %>%
   subset(select = -State) %>%
@@ -89,7 +105,7 @@ Bachelor_Degree_Majors %>%
          fill = guide_legend(override.aes = list(size = 1)))
 ```
 
-```{r}
+```{r,fig.height=5,fig.width=12}
 Bachelor_Degree_Majors %>%
   subset(select = -Sex) %>%
   subset(select = -State) %>%
@@ -152,9 +168,10 @@ degrees_over_time %>%
        subtitle = "",
        fill = "") +
   theme_igray() +
-  scale_fill_manual(
-    name = NULL,
-    values = c("darkslateblue", "steelblue4", "tan2", "lightblue4", "azure4", "darkgrey")) +
+  #scale_fill_manual(
+    #name = NULL,
+    #values = c("darkslateblue", "steelblue4", "tan2", "lightblue4", "azure4", "darkgrey")) +
+  scale_fill_brewer(palette="Blues")
   theme(legend.position = "bottom",
         axis.title.x = element_blank())
 ```
@@ -268,3 +285,99 @@ degree_income_starting %>%
         axis.title = element_blank())
 ```
 
+## State bachelor degrees vs.median income
+
+```{r}
+pop_est_2019 <- pop_est_2019 %>% 
+  mutate(State = str_replace(State,'.','')) %>% 
+  rename('total_pop' = '2019')
+  
+```
+```{r,fig.height=5, fig.width = 10}
+states_map <- map_data("state")
+
+p1<-bachelor %>% 
+  filter(Sex == 'Total',
+         `Age Group`== '25 and older') %>% 
+  group_by(State) %>% 
+  summarise(total_bachelor = sum(`Bachelor's Degree Holders`)) %>% 
+  merge(pop_est_2019, on = 'State') %>% 
+  mutate(bachelor_prop = total_bachelor/total_pop,
+         State = str_to_lower(State)) %>% 
+  ggplot() +
+  geom_map(map = states_map,
+           aes(map_id = State,
+               fill = bachelor_prop)) +
+  expand_limits(x = states_map$long, y = states_map$lat) + 
+  theme_map() + 
+  labs(title = 'Rate of Bachelor Dergee by State',
+       fill = 'bachelor degree rate') + 
+  scale_fill_gradientn(colours=brewer.pal(7,"Blues"))
+  
+
+p2<-median_income %>% 
+  mutate(State = str_to_lower(State),
+         Income = str_sub(Income,start = 2),
+         Income = str_remove(Income,','),
+         Income = as.numeric(Income)) %>% 
+  ggplot() +
+  geom_map(map = states_map,
+           aes(map_id = State,
+               fill = Income))+
+  expand_limits(x = states_map$long, y = states_map$lat) + 
+  theme_map() + 
+  labs(title = 'Median Income by State',
+       fill = 'median income') + 
+  scale_fill_gradientn(colours=brewer.pal(7,"Blues"))
+
+grid.arrange(p1,p2,ncol = 2)
+```
+
+
+Would income generally relate with the number of bachelor degrees? The graphs above show the proportion of bachelor degrees in each state and median income of each state respectively. The lighter the state is, the more bachelor degrees that the state has and the higher the median income is. By comparing these two graphs, we could roughly see that in general, the state with higher median income would also has more bachelor degrees. 
+
+
+## Government expenditure vs Bachelor degree
+```{r}
+edu<-edu_exp %>% 
+  filter(YEAR >=2012) %>% 
+  mutate(net_edu_exp = (TOTAL_REVENUE - TOTAL_EXPENDITURE)/ENROLL )%>% 
+  group_by(STATE) %>% 
+  summarise(net_edu_exp_avg = mean(net_edu_exp)) %>% 
+  left_join(
+    (bachelor %>% 
+  filter(Sex == 'Total',`Age Group`=='25 and older') %>% 
+  group_by(State) %>% 
+  summarise(total_bachelor = sum(`Bachelor's Degree Holders`)) %>% 
+  merge(pop_est_2019, on = 'State') %>% 
+  mutate(bachelor_prop = total_bachelor/total_pop)), by = c('STATE' = 'State') ) %>% 
+  inner_join(
+    (median_income %>% 
+  mutate(Income = str_sub(Income,start = 2),
+         Income = str_remove(Income,','),
+         Income = as.numeric(Income))), by = c('STATE' = 'State')) %>% 
+  mutate(IncomeGroup = ifelse(Income > 70000,'Median Income>70000','Median Income<70000'))
+```
+```{r}
+
+edu%>% 
+  ggplot(aes(x = net_edu_exp_avg , y = bachelor_prop)) + 
+  geom_point(aes(color = Income)) + 
+  geom_text(aes(label=ifelse(bachelor_prop>0.3,as.character(STATE),'')),hjust=1.2,vjust=0) + 
+  geom_text(aes(label = ifelse(bachelor_prop<0.16,as.character(STATE),'')),hjust=0.5,vjust=1) + 
+  geom_text(aes(label = ifelse(net_edu_exp_avg>1,as.character(STATE),'')),hjust=0.5,vjust=1) + 
+  geom_smooth(aes(lty = IncomeGroup), method = "lm", se = FALSE) + 
+  labs(x = 'Average Net Educational Expenditure in 5 Years',
+       y = 'Rate of Bachelor Degrees',
+       title = 'Government educational expenditure vs proportion of bachelor degrees\ndifferentiating by state median income  ',
+       lty ='Regression Lines',
+       color = 'Median Income') + 
+  theme_igray() + 
+  scale_color_gradientn(colours=brewer.pal(7,"Blues"))+
+  scale_fill_brewer(palette = 'Blues')
+ 
+``` 
+
+
+Also, for states with different median incomes, the government spending on primary and secondary education may contribute differently to the proportion of bachelor degrees a state has. For example, the graph above compares the averaged net government expenditure on primary and secondary schools in 5 years (2012-2016)
+with the rate of bachelor's degrees in each state. Points are marked with different colors for different median incomes. The dashed lines are the regression lines for states with higher median income (above 70000) and those with lower median income (equal to or above 70000). Those lines precisely depict the relationship between the variable and the outcome in different groups. It turns out that in general, we could expect a positive relationship between the average government expenditure on education and the proportion of bachelor's degrees. However, this positive correlation seems to be stronger for states with higher median incomes, as the dashed line showing a steeper slope. For states with lower median income, this positive relationship is minimal and even negative. Some states deviate from the general trend though. For example, though the net education spendings for the District of Columbia and Massachusetts are not exceptional, the proportion of bachelor degrees they have are higher than expected. For states like Indiana, West Virginia, and Mississippi, the proportions of bachelor's degrees are surprisingly low compared to their government educational expenditures. 
