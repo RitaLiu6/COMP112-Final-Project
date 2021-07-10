@@ -92,7 +92,7 @@ Bachelor_Degree_Majors %>%
   theme_igray() +
   scale_fill_manual(
     name = NULL,
-    values = c("cornflowerblue", "palevioletred4", "lightgoldenrod3", "tan2", 
+    values = c("cornflowerblue", "palevioletred4", "goldenrod1", "tan2", 
                "slateblue4")) +
   labs(title = "Distribution of Bachelor's Degrees by Gender", 
        subtitle = "",
@@ -100,9 +100,10 @@ Bachelor_Degree_Majors %>%
   theme(legend.position = "bottom",
         axis.text = element_blank(),
         axis.ticks = element_blank(), 
-        legend.text = element_text(size = 14),
+        legend.text = element_text(size = 13.5),
         plot.title = element_text(hjust = 0.5,
-                                  size = 35),
+                                  size = 35,
+                                  margin = margin(10,0,0,0)),
         strip.text = element_text(size = 30)) +
   guides(fill = guide_legend(reverse = TRUE),
          fill = guide_legend(override.aes = list(size = 1)))
@@ -136,17 +137,18 @@ Bachelor_Degree_Majors %>%
   theme_igray() +
   scale_fill_manual(
     name = NULL,
-    values = c("palevioletred4", "cornflowerblue", "lightgoldenrod3", "tan2", 
+    values = c("palevioletred4", "cornflowerblue", "goldenrod1", "tan2", 
                "slateblue4")) +
   labs(title = "Distribution of Bachelor's Degrees by Age Group", 
        subtitle = "",
        fill = "") +
   theme(legend.position = "bottom",
         axis.text = element_blank(),
-        axis.ticks = element_blank(),, 
-        legend.text = element_text(size = 18),
+        axis.ticks = element_blank(),
+        legend.text = element_text(size = 21),
         plot.title = element_text(hjust = 0.5,
-                                  size = 35),
+                                  size = 35,
+                                  margin = margin(10,0,0,0)),
         strip.text = element_text(size = 30)) +
   guides(fill = guide_legend(reverse = TRUE),
          fill = guide_legend(override.aes = list(size = 1)))
@@ -158,8 +160,14 @@ Bachelor_Degree_Majors %>%
 degrees_over_time %>%
 #  subset(select = -c(No_HS_Diploma, HS_Diploma, Some_College_No_Degree, Associate, 
 #                     Advanced)) %>%
+  group_by(Year) %>%
   subset(select = -Total) %>%
-  pivot_longer(-c(Year, Age_Range, Sex),
+  summarize(`No HS Diploma` = No_HS_Diploma,
+         `HS Diploma` = HS_Diploma,
+         `Some College No Degree` = Some_College_No_Degree,
+         Associate = Associate, Advanced = Advanced,
+         Bachelor = Bachelor) %>%
+  pivot_longer(-c(Year),
                names_to = "Degree_Type",
                values_to = "Count",
                values_ptypes = list(num_nests = integer())) %>%
@@ -169,9 +177,9 @@ degrees_over_time %>%
   ggplot(aes(x = Year,
              y = Count,
              fill = Degree_Type)) +
-  geom_col(width = 4) +
+  geom_col(width = 4.5) +
   labs(title = "Attainment of Education Over Time in the US", 
-       subtitle = "",
+       subtitle = "Number of degrees reported in the US from 1995-2015",
        fill = "") +
   theme_igray() +
   #scale_fill_manual(
@@ -180,10 +188,17 @@ degrees_over_time %>%
               #"darkgrey")) +
   scale_fill_brewer(palette="Blues") +
   theme(legend.position = "bottom",
-        axis.title.x = element_blank(),
-        axis.title.y = element_text(size = 18),
+        legend.text = element_text(size = 18),
+        axis.title = element_blank(),
+        axis.text = element_text(size = 18),
         plot.title = element_text(hjust = 0.5,
-                                  size = 25))
+                                  size = 25,
+                                  margin = margin(10,0,0,0)),
+        plot.subtitle = element_text(size = 20,
+                                     hjust = 0.5,
+                                     margin = margin(5,0,15,0),
+                                     color = "grey22",
+                                     face = "italic"))
 ```
 
 ## Bachelor's Degrees Income
@@ -292,9 +307,13 @@ degree_income_starting %>%
     name = NULL,
     values = c("tomato", "dodgerblue")) +
   theme(legend.position = "bottom",
+        legend.text = element_text(size = 20),
         axis.title = element_blank(),
-        plot.title = element_text(hjust = 0.5,
-                                  size = 30))
+        axis.text = element_text(size = 18),
+        plot.title = element_text(hjust = 0,
+                                  size = 25,
+                                  margin = margin(10,0,0,0))) +
+  guides(color = guide_legend(reverse = TRUE))
 ```
 
 ## State bachelor degrees vs.median income
