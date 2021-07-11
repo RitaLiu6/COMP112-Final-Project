@@ -12,10 +12,10 @@ output:
 ---
 
 ```{r setup, include=FALSE}
-#knitr::opts_chunk$set(echo = TRUE, message=FALSE, warning=FALSE)
+knitr::opts_chunk$set(echo = TRUE, message=FALSE, warning=FALSE)
 ```
 
-```{r libraries}
+```{r libraries,echo=FALSE}
 library(tidyverse)         # for graphing and data cleaning
 library(lubridate)         # for working with dates
 library(remotes)
@@ -39,10 +39,9 @@ library(sf)            # for working with spatial data
 library(gridExtra)
 theme_set(theme_minimal())
 library(RColorBrewer)  # for color palettes
-library(prettydoc)
 ```
 
-```{r data}
+```{r data , echo=FALSE}
 
 Bachelor_Degree_Majors <- read_csv("Data/Bachelor_Degree_Majors.csv")
 
@@ -66,7 +65,7 @@ edu_exp <- read_csv('Data/states.csv')
   In the past few decades, the procurement and breadth of education have risen in the United States in an increasingly positive trend. The proportions of different extents of education remain similar in recent years, where the population is dominated by those with just a high school diploma or some college without a degree, but the groups reaching the most growth are those with college certifications, such as bachelor's, associate's, and advanced degrees.
 
 
-```{r,fig.height=5,fig.width=8}
+```{r,fig.height=5,fig.width=8,echo=FALSE}
 degrees_over_time %>%
   group_by(Year) %>%
   subset(select = -Total) %>%
@@ -122,7 +121,7 @@ degrees_over_time %>%
 
 First, we will explore bachelor's degree popularity by gender and age to distinguish the inherent preferences of educational acquisition.
 
-```{r,fig.height=5,fig.width=12}
+```{r,fig.height=5,fig.width=12,echo=FALSE}
 Bachelor_Degree_Majors %>%
   subset(select = -`Age Group`) %>%
   subset(select = -State) %>%
@@ -172,7 +171,7 @@ Bachelor_Degree_Majors %>%
   Starting with gender, there is a noticeable difference in the types of degrees sought after by men vs women. The most common field for either sex is Science and Engineering, but women lean more towards the Arts, Humanities, and Education, while men tend to be more involved in Business. Furthermore, the distribution of degree types for women are more balanced than those of the opposite gender. Do these sorts of biases also exist in different age groups?
 
 
-```{r,fig.height=5,fig.width=12}
+```{r,fig.height=5,fig.width=12,echo=FALSE}
 Bachelor_Degree_Majors %>%
   subset(select = -Sex) %>%
   subset(select = -State) %>%
@@ -223,7 +222,7 @@ Bachelor_Degree_Majors %>%
   
   After reviewing the basic composition of attained bachelor's degrees, we can move forward with our initial questions about how these preferences developed. One of the more simple measures of career success following college is salary, particularly the amount of starting salary and mid-career salary one gains based on their choice of college degree.
 
-```{r,fig.height=5,fig.width=8}
+```{r,fig.height=5,fig.width=8,echo=FALSE}
 degree_income_exp <- degree_income %>%
   mutate(perc_change = `Percent change from Starting to Mid-Career Salary`,
          major = `Undergraduate Major`,
@@ -344,13 +343,13 @@ degree_income_starting %>%
 
 ### Degrees Over Space and Income: Explaining Deeper Trends
 
-```{r}
+```{r, echo =FALSE}
 pop_est_2019 <- pop_est_2019 %>% 
   mutate(State = str_replace(State,'.','')) %>% 
   rename('total_pop' = '2019')
   
 ```
-```{r,fig.height=5,fig.width=14}
+```{r,fig.height=5,fig.width=14,echo=FALSE}
 states_map <- map_data("state")
 
 p1<-bachelor %>% 
@@ -370,7 +369,7 @@ p1<-bachelor %>%
   theme_map() + 
   labs(title = "Rate of Bachelor's Degrees by State",
        fill = "") + 
-  scale_fill_gradientn(colours=brewer.pal(7,"Blues")) +
+  scale_fill_viridis_b()+
   theme(plot.title = element_text(size = 35,
                                   hjust = 0.5,
                                   margin = margin(0,0,0,0)),
@@ -391,7 +390,7 @@ p2<-median_income %>%
   theme_map() + 
   labs(title = 'Median Income by State',
        fill = "") + 
-  scale_fill_gradientn(colours=brewer.pal(7,"Blues")) +
+  scale_fill_viridis_b(option = 'mako') +
   theme(plot.title = element_text(size = 35,
                                   hjust = 0.5,
                                   margin = margin(0,0,0,0)),
@@ -402,7 +401,7 @@ grid.arrange(p1,p2,ncol = 2)
 
   Would income generally relate with the number of bachelor's degrees? The graphs above show the proportion of bachelor degrees in each state and median income of each state respectively. The lighter the state is, the more bachelor degrees that the state has and the higher the median income is. By comparing these two graphs, we could roughly see that in general, the state with higher median income would also has more bachelor degrees. 
 
-```{r}
+```{r,echo=FALSE}
 edu<-edu_exp %>% 
   filter(YEAR >=2012) %>% 
   mutate(net_edu_exp = (TOTAL_REVENUE - TOTAL_EXPENDITURE)/ENROLL )%>% 
@@ -422,7 +421,7 @@ edu<-edu_exp %>%
          Income = as.numeric(Income))), by = c('STATE' = 'State')) %>% 
   mutate(IncomeGroup = ifelse(Income > 70000,'Median Income>70000','Median Income<70000'))
 ```
-```{r}
+```{r,echo=FALSE}
 
 edu%>% 
   ggplot(aes(x = net_edu_exp_avg , y = bachelor_prop)) + 
@@ -438,8 +437,7 @@ edu%>%
        lty ='Regression Lines',
        color = 'Median Income') + 
   theme_igray() + 
-  scale_color_gradientn(colours=brewer.pal(7,"Blues"))+
-  scale_fill_brewer(palette = 'Blues') +
+  scale_color_viridis_b(option = 'mako')+ 
   theme(plot.title = element_text(size = 20,
                                   hjust = 0,
                                   margin = margin(10,0,0,0)),
